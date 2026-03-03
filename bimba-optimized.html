@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FF69B4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SIMPLE TO CONVERT</title>
+    
+    <!-- Manifest для PWA -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU2ltcGxlIHRvIENvbnZlcnQiLCJzaG9ydF9uYW1lIjoiQ29udmVydGVyIiwic3RhcnRfdXJsIjoiLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNGRjY5QjQiLCJ0aGVtZV9jb2xvciI6IiNGRjY5QjQifQ==">
+    
+    <!-- Иконка (можно заменить на свою) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23FF69B4' width='100' height='100' rx='20'/><text y='70' font-size='60' text-anchor='middle' x='50' fill='white' font-family='Arial Black'>↔</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #FF69B4 0%, #FF6B6B 50%, #FFB347 100%);
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000;
+            text-align: center;
+            margin-bottom: 32px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .converter-card {
+            background: #FFF;
+            border: 3px solid #000;
+            border-radius: 24px;
+            padding: 28px 20px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 3px solid #000;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-transform: uppercase;
+            background: #FFF;
+            color: #000;
+        }
+
+        .tab.active {
+            background: #000;
+            color: #FFF;
+            transform: scale(1.02);
+        }
+
+        .tab:active {
+            transform: scale(0.98);
+        }
+
+        .converter-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            width: 100%;
+        }
+
+        .label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 8px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            background: #FFF;
+            border: 3px solid #000;
+            border-radius: 16px;
+            padding: 4px;
+            width: 100%;
+        }
+
+        input {
+            flex: 1;
+            border: none;
+            padding: 14px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+            background: transparent;
+            outline: none;
+            min-width: 0;
+        }
+
+        input::placeholder {
+            color: #CCC;
+        }
+
+        select {
+            border: none;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #000;
+            background: #FFE88F;
+            border-radius: 12px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .arrow-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .arrow {
+            font-size: 28px;
+            color: #000;
+            font-weight: 700;
+        }
+
+        .swap-btn {
+            position: absolute;
+            background: #FF69B4;
+            border: 3px solid #000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: 700;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .swap-btn:active {
+            transform: rotate(180deg) scale(0.95);
+        }
+
+        .result-box {
+            background: #B8E6B8;
+            border: 3px solid #000;
+            border-radius: 50%;
+            padding: 28px;
+            width: 100%;
+            text-align: center;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 6px;
+            line-height: 1;
+            word-break: break-all;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #000;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Shopping specific */
+        .shopping-section {
+            display: none;
+        }
+
+        .shopping-section.active {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .price-display {
+            background: #B8E6B8;
+            border: 3px solid #000;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .price-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .price-label {
+            font-size: 12px;
+            color: #000;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 24px;
+            }
+
+            .converter-card {
+                padding: 24px 16px;
+            }
+
+            input {
+                font-size: 20px;
+                padding: 12px;
+            }
+
+            .result-value {
+                font-size: 30px;
+            }
+
+            .result-box {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Simple to convert</h1>
+    
+    <div class="converter-card">
+        <div class="tabs">
+            <button class="tab active" onclick="switchMode('weight')">
+                ⚖️ WEIGHT
+            </button>
+            <button class="tab" onclick="switchMode('length')">
+                📏 LENGTH
+            </button>
+            <button class="tab" onclick="switchMode('shopping')">
+                🛍️ SHOPPING
+            </button>
+            <button class="tab" onclick="switchMode('temp')">
+                🌡️ TEMP
+            </button>
+        </div>
+
+        <!-- Weight & Length Section -->
+        <div id="standard-section" class="converter-section">
+            <div class="input-group">
+                <label class="label" id="fromLabel">Pounds (US)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="inputValue" placeholder="250" oninput="convert()">
+                    <select id="fromUnit" onchange="convert()">
+                        <option value="lbs">lbs</option>
+                        <option value="oz">oz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="arrow-container">
+                <div class="arrow">↓</div>
+                <button class="swap-btn" onclick="swapUnits()">⇄</button>
+            </div>
+
+            <div class="input-group">
+                <label class="label" id="toLabel">Kilograms (EU)</label>
+                <div class="result-box">
+                    <div class="result-value" id="resultValue">—</div>
+                    <div class="result-label" id="resultUnit">kg</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping Section -->
+        <div id="shopping-section" class="shopping-section">
+            <div class="input-group">
+                <label class="label">Price per pound (USD)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="priceInput" placeholder="5.99" oninput="convertPrice()" step="0.01">
+                    <span style="padding: 14px; font-weight: 700; font-size: 16px;">$/lb</span>
+                </div>
+            </div>
+
+            <div class="arrow-container">
+                <div class="arrow">↓</div>
+            </div>
+
+            <div class="input-group">
+                <label class="label">Price per kilogram (USD)</label>
+                <div class="price-display">
+                    <div class="price-value" id="priceResult">—</div>
+                    <div class="price-label">$/kg</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'weight';
+
+        const units = {
+            weight: {
+                us: ['lbs', 'oz'],
+                eu: ['kg', 'g'],
+                conversions: {
+                    'lbs-kg': 0.453592,
+                    'lbs-g': 453.592,
+                    'oz-kg': 0.0283495,
+                    'oz-g': 28.3495,
+                    'kg-lbs': 2.20462,
+                    'kg-oz': 35.274,
+                    'g-lbs': 0.00220462,
+                    'g-oz': 0.035274
+                }
+            },
+            length: {
+                us: ['miles', 'ft', 'in'],
+                eu: ['km', 'm', 'cm'],
+                conversions: {
+                    'miles-km': 1.60934,
+                    'miles-m': 1609.34,
+                    'miles-cm': 160934,
+                    'ft-km': 0.0003048,
+                    'ft-m': 0.3048,
+                    'ft-cm': 30.48,
+                    'in-km': 0.0000254,
+                    'in-m': 0.0254,
+                    'in-cm': 2.54,
+                    'km-miles': 0.621371,
+                    'km-ft': 3280.84,
+                    'km-in': 39370.1,
+                    'm-miles': 0.000621371,
+                    'm-ft': 3.28084,
+                    'm-in': 39.3701,
+                    'cm-miles': 0.00000621371,
+                    'cm-ft': 0.0328084,
+                    'cm-in': 0.393701
+                }
+            },
+            temp: {
+                us: ['F'],
+                eu: ['C'],
+                conversions: {
+                    'F-C': (val) => (val - 32) * 5/9,
+                    'C-F': (val) => (val * 9/5) + 32
+                }
+            }
+        };
+
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Update tabs
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                const modes = ['weight', 'length', 'shopping', 'temp'];
+                tab.classList.toggle('active', modes[i] === mode);
+            });
+
+            // Show/hide sections
+            if (mode === 'shopping') {
+                document.getElementById('standard-section').style.display = 'none';
+                document.getElementById('shopping-section').classList.add('active');
+            } else {
+                document.getElementById('standard-section').style.display = 'flex';
+                document.getElementById('shopping-section').classList.remove('active');
+                
+                const fromSelect = document.getElementById('fromUnit');
+                const toSelect = document.getElementById('resultUnit');
+                fromSelect.innerHTML = '';
+
+                if (mode === 'weight') {
+                    units.weight.us.forEach(u => {
+                        fromSelect.innerHTML += `<option value="${u}">${u}</option>`;
+                    });
+                    toSelect.textContent = 'kg';
+                } else if (mode === 'length') {
+                    units.length.us.forEach(u => {
+                        fromSelect.innerHTML += `<option value="${u}">${u}</option>`;
+                    });
+                    toSelect.textContent = 'km';
+                } else if (mode === 'temp') {
+                    fromSelect.innerHTML = '<option value="F">°F</option>';
+                    toSelect.textContent = '°C';
+                }
+
+                document.getElementById('inputValue').value = '';
+                document.getElementById('resultValue').textContent = '—';
+                updateLabels();
+            }
+        }
+
+        function updateLabels() {
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('resultUnit').textContent;
+            
+            document.getElementById('fromLabel').textContent = getUnitLabel(fromUnit, false);
+            document.getElementById('toLabel').textContent = getUnitLabel(toUnit, true);
+        }
+
+        function getUnitLabel(unit, isEU) {
+            const labels = {
+                'g': 'Grams',
+                'kg': 'Kilograms',
+                'oz': 'Ounces',
+                'lbs': 'Pounds',
+                'cm': 'Centimeters',
+                'm': 'Meters',
+                'km': 'Kilometers',
+                'in': 'Inches',
+                'ft': 'Feet',
+                'miles': 'Miles',
+                'F': 'Fahrenheit',
+                '°F': 'Fahrenheit',
+                'C': 'Celsius',
+                '°C': 'Celsius'
+            };
+            return `${labels[unit]} (${isEU ? 'EU' : 'US'})`;
+        }
+
+        function convert() {
+            updateLabels();
+            
+            const input = parseFloat(document.getElementById('inputValue').value);
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('resultUnit').textContent.replace('°', '');
+            
+            if (!input || isNaN(input)) {
+                document.getElementById('resultValue').textContent = '—';
+                return;
+            }
+
+            let result;
+            
+            if (currentMode === 'temp') {
+                const key = `${fromUnit}-${toUnit}`;
+                result = units.temp.conversions[key](input);
+            } else {
+                const key = `${fromUnit}-${toUnit}`;
+                const conversions = units[currentMode].conversions;
+                
+                if (conversions[key]) {
+                    result = input * conversions[key];
+                } else {
+                    document.getElementById('resultValue').textContent = '—';
+                    return;
+                }
+            }
+
+            document.getElementById('resultValue').textContent = result.toFixed(2);
+        }
+
+        function convertPrice() {
+            const price = parseFloat(document.getElementById('priceInput').value);
+            
+            if (!price || isNaN(price)) {
+                document.getElementById('priceResult').textContent = '—';
+                return;
+            }
+
+            // $1/lb to $/kg: multiply by 2.20462 (since 1kg = 2.20462 lbs)
+            const pricePerKg = price * 2.20462;
+            document.getElementById('priceResult').textContent = '$' + pricePerKg.toFixed(2);
+        }
+
+        function swapUnits() {
+            if (currentMode === 'shopping') return;
+            
+            const fromSelect = document.getElementById('fromUnit');
+            const resultUnit = document.getElementById('resultUnit');
+            const inputValue = document.getElementById('inputValue');
+            const resultValue = document.getElementById('resultValue');
+
+            const currentFromUnit = fromSelect.value;
+            const currentToUnit = resultUnit.textContent.replace('°', '');
+
+            fromSelect.innerHTML = '';
+            
+            if (currentMode === 'weight') {
+                const isUStoEU = units.weight.us.includes(currentFromUnit);
+                if (isUStoEU) {
+                    units.weight.eu.forEach(u => {
+                        fromSelect.innerHTML += `<option value="${u}">${u}</option>`;
+                    });
+                    fromSelect.value = currentToUnit;
+                    resultUnit.textContent = currentFromUnit;
+                } else {
+                    units.weight.us.forEach(u => {
+                        fromSelect.innerHTML += `<option value="${u}">${u}</option>`;
+                    });
+                    fromSelect.value = currentToUnit;
+                    resultUnit.textContent = currentFromUnit;
+                }
+            } else if (currentMode === 'length') {
+                const isUStoEU = units.length.us.includes(currentFromUnit);
+                if (isUStoEU) {
+                    units.length.eu.forEach(u => {
+                        fromSelect.innerHTML += `<option value="${u}">${u}</option>`;
+                    });
+                    fromSelect.value = currentToUnit;
+                    resultUnit.textContent = currentFromUnit;
+                } else {
+                    units.length.us.forEach(u => {
+                        fromSelect.innerHTML += `<option value="${u}">${u}</option>`;
+                    });
+                    fromSelect.value = currentToUnit;
+                    resultUnit.textContent = currentFromUnit;
+                }
+            } else if (currentMode === 'temp') {
+                if (currentFromUnit === 'F') {
+                    fromSelect.innerHTML = '<option value="C">°C</option>';
+                    resultUnit.textContent = '°F';
+                } else {
+                    fromSelect.innerHTML = '<option value="F">°F</option>';
+                    resultUnit.textContent = '°C';
+                }
+            }
+
+            if (resultValue.textContent !== '—') {
+                inputValue.value = resultValue.textContent;
+            }
+
+            updateLabels();
+            convert();
+        }
+
+        // Initialize
+        switchMode('weight');
+
+        // Service Worker для офлайн работы (опционально)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request).then(response => {
+                                return response || fetch(event.request);
+                            })
+                        );
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl);
+            });
+        }
+    </script>
+</body>
+</html>
